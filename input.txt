@@ -1,0 +1,6 @@
+50 5
+Upma 25 35
+Idli 15 25
+Dosa 20 35
+BreadButter 15 20
+Toast 20 25

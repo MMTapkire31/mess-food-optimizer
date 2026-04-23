@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ meal.capitalize() }} Menu · Mess Optimizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <h2>🍽️ Mess Optimizer</h2>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    {% if compare_mode %}
+      <a href="/menu/{{ meal }}">Normal Mode</a>
+    {% else %}
+      <a href="/compare/{{ meal }}" class="active">Compare Algorithms</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- HEADER -->
+<div class="menu-header">
+  <h1>{{ meal.capitalize() }} Menu
+    {% if compare_mode %}<span style="font-size:1rem;font-weight:400;color:var(--saffron);margin-left:.75rem;">Algorithm Comparison Mode</span>{% endif %}
+  </h1>
+  <div class="tabs">
+    {% for m in ['breakfast','lunch','dinner'] %}
+      {% if compare_mode %}
+        <a href="/compare/{{ m }}" class="{{ 'active' if m == meal }}">{{ m.capitalize() }}</a>
+      {% else %}
+        <a href="/menu/{{ m }}" class="{{ 'active' if m == meal }}">{{ m.capitalize() }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container">
+  <form method="POST">
+
+    <!-- BUDGET -->
+    <div class="budget-box">
+      <h3>💰 Budget</h3>
+      <input type="number" name="budget" min="10" max="2000" value="150" required>
+      <label>Rs.</label>
+      {% if compare_mode %}
+        <h3 style="margin-left:1rem">🥗 Min Nutrition</h3>
+        <input class="nutrition-input" type="number" name="min_nutrition" min="0" max="500" value="100" placeholder="0 = no limit">
+        <label>pts</label>
+      {% endif %}
+    </div>
+
+    <!-- FOOD CARDS -->
+    <div class="section-title">🍴 Select Food Items
+      <span style="font-size:.78rem;font-weight:400;color:var(--muted);">(click to toggle)</span>
+    </div>
+
+    <div class="menu-cards">
+      {% for item in items %}
+      <label class="food-card">
+        <div class="card-top">
+          <input type="checkbox" name="food"
+                 value="{{ item.name }}|{{ item.price }}|{{ item.value }}|{{ item.nutrition }}|{{ item.category }}"
+                 onchange="this.closest('.food-card').classList.toggle('checked', this.checked); updateCount();">
+          <span class="cb-box"></span>
+          <span class="badge">{{ item.category }}</span>
+        </div>
+        <h4>{{ item.name }}</h4>
+        <div class="meta">
+          <span>💰 Rs.{{ item.price }}</span>
+          <span>⭐ Value: {{ item.value }}</span>
+          <span>🥗 Nutrition: {{ item.nutrition }}</span>
+          <span style="font-size:.72rem;color:#aaa">Ratio: {{ "%.2f"|format(item.value/item.price) }}</span>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+      <button type="button" class="btn btn-outline" onclick="selectAll()">Select All</button>
+      <button type="button" class="btn btn-outline" onclick="clearAll()">Clear All</button>
+      <span id="count-label" style="font-size:.85rem;color:var(--muted);">0 items selected</span>
+      <div style="margin-left:auto">
+        {% if compare_mode %}
+          <button type="submit" class="opt-btn">🔬 Compare Algorithms</button>
+        {% else %}
+          <button type="submit" class="opt-btn">⚡ Optimize Now</button>
+        {% endif %}
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<footer>Built for Design & Analysis of Algorithms · Flask + Python Knapsack Solvers</footer>
+
+<script>
+function updateCount() {
+  const n = document.querySelectorAll('.food-card input:checked').length;
+  document.getElementById('count-label').textContent = n + ' item' + (n !== 1 ? 's' : '') + ' selected';
+}
+function selectAll() {
+  document.querySelectorAll('.food-card input').forEach(cb => {
+    cb.checked = true;
+    cb.closest('.food-card').classList.add('checked');
+  });
+  updateCount();
+}
+function clearAll() {
+  document.querySelectorAll('.food-card input').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.food-card').classList.remove('checked');
+  });
+  updateCount();
+}
+</script>
+</body>
+</html>

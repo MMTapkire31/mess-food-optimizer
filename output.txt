@@ -1,0 +1,5 @@
+Dosa (Rs.20, Value 35)
+Idli (Rs.15, Value 25)
+BreadButter (Rs.15, Value 20)
+TOTAL 50
+VALUE 80

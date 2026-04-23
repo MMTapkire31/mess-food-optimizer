@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Result · Mess Optimizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+  <h2>🍽️ Mess Optimizer</h2>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/menu/{{ meal }}">Back to Menu</a>
+    <a href="/compare/{{ meal }}">Compare Algorithms</a>
+  </div>
+</nav>
+
+<div class="menu-header">
+  <h1>✅ Greedy Result — {{ meal.capitalize() }}</h1>
+</div>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-chip">
+      <div class="label">Items Selected</div>
+      <div class="val saffron">{{ result|length }}</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Total Cost</div>
+      <div class="val saffron">₹{{ total }}</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Total Value</div>
+      <div class="val green">{{ value }}</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Total Nutrition</div>
+      <div class="val green">{{ nutrition }} pts</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Algorithm</div>
+      <div class="val" style="font-size:1rem;">Greedy</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Complexity</div>
+      <div class="val" style="font-size:1rem;">O(n log n)</div>
+    </div>
+  </div>
+
+  <!-- SELECTED ITEMS -->
+  <div class="result" style="margin-top:2rem;">
+    <h3>🍽️ Selected Items</h3>
+    <ul>
+      {% for item in result %}
+      <li>
+        <strong>{{ item.name }}</strong>
+        &nbsp;·&nbsp; ₹{{ item.price }}
+        &nbsp;·&nbsp; Value {{ item.value }}
+        &nbsp;·&nbsp; Nutrition {{ item.nutrition }}
+        &nbsp;·&nbsp; Ratio {{ "%.2f"|format(item.value/item.price) }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- TRACE TABLE -->
+  <div class="trace-section">
+    <h3>🔍 Step-by-Step Greedy Trace</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.85rem;">
+      Items sorted by Value/Price ratio (highest first). Each row shows the decision made.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Price (₹)</th>
+            <th>Value</th>
+            <th>V/P Ratio</th>
+            <th>Decision</th>
+            <th>Budget Left (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for step in trace %}
+          <tr class="{{ 'selected-row' if step.action == 'Selected' else 'skipped-row' }}">
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ step.item }}</strong></td>
+            <td>{{ step.price }}</td>
+            <td>{{ step.value }}</td>
+            <td>{{ step.ratio }}</td>
+            <td class="{{ 'tag-selected' if step.action == 'Selected' else 'tag-skipped' }}">
+              {{ '✅ Selected' if step.action == 'Selected' else '❌ Skipped' }}
+            </td>
+            <td>{{ step.budget_remaining }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+    <a href="/menu/{{ meal }}" class="opt-btn">🔙 Back to Menu</a>
+    <a href="/compare/{{ meal }}" class="opt-btn" style="background:var(--green);">🔬 Compare All Algorithms</a>
+  </div>
+
+</div>
+
+<footer>Built for Design & Analysis of Algorithms · Flask + Python Knapsack Solvers</footer>
+</body>
+</html>

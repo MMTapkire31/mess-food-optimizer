@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Algorithm Comparison · Mess Optimizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <h2>🍽️ Mess Optimizer</h2>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/compare/{{ meal }}">Back to Selection</a>
+  </div>
+</nav>
+
+<div class="menu-header">
+  <h1>🔬 Algorithm Comparison — {{ meal.capitalize() }}</h1>
+  <p style="color:rgba(255,255,255,.65);font-size:.9rem;margin-top:.5rem;">Budget: ₹{{ budget }}</p>
+</div>
+
+<div class="container">
+
+  <!-- ALGORITHM CARDS -->
+  <h2 style="font-family:var(--font-head);font-size:1.4rem;margin-bottom:1.25rem;">📊 Results Side-by-Side</h2>
+  <div class="algo-grid">
+
+    <!-- GREEDY -->
+    <div class="algo-card">
+      <h3>⚡ Greedy
+        {% if greedy.value == dp.value %}<span class="winner-badge">Optimal Here</span>{% endif %}
+      </h3>
+      <div class="complexity">Complexity: O(n log n) · Sort by value/price ratio</div>
+      <ul>
+        {% for item in greedy.selected %}
+        <li>{{ item.name }} — ₹{{ item.price }} (val {{ item.value }})</li>
+        {% else %}
+        <li>No items fit budget</li>
+        {% endfor %}
+      </ul>
+      <div class="algo-stats">
+        <span>₹{{ greedy.cost }}</span>
+        <span>Value {{ greedy.value }}</span>
+        <span>{{ greedy.time }} ms</span>
+      </div>
+      {% if greedy.value < dp.value %}
+      <p style="margin-top:.85rem;font-size:.8rem;color:#E53935;font-weight:600;">
+        ⚠️ Suboptimal — missed {{ dp.value - greedy.value }} value vs DP
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- DP -->
+    <div class="algo-card winner">
+      <h3>🧠 Dynamic Programming <span class="winner-badge">Always Optimal</span></h3>
+      <div class="complexity">Complexity: O(n × W) · 0/1 Knapsack DP table</div>
+      <ul>
+        {% for item in dp.selected %}
+        <li>{{ item.name }} — ₹{{ item.price }} (val {{ item.value }})</li>
+        {% else %}
+        <li>No items fit budget</li>
+        {% endfor %}
+      </ul>
+      <div class="algo-stats">
+        <span>₹{{ dp.cost }}</span>
+        <span>Value {{ dp.value }}</span>
+        <span>{{ dp.time }} ms</span>
+      </div>
+    </div>
+
+    <!-- BRUTE FORCE -->
+    <div class="algo-card">
+      <h3>🔍 Brute Force
+        {% if not too_large %}<span class="winner-badge">Guaranteed Optimal</span>{% endif %}
+      </h3>
+      <div class="complexity">Complexity: O(2ⁿ) · Exhaustive search of all subsets</div>
+      {% if too_large %}
+      <p style="color:#E53935;font-size:.85rem;padding:1rem 0;">
+        ⚠️ Disabled — more than 15 items selected. 2¹⁵ = 32,768 subsets is too slow to display here.
+        This illustrates why brute force doesn't scale!
+      </p>
+      {% else %}
+      <ul>
+        {% for item in brute.selected %}
+        <li>{{ item.name }} — ₹{{ item.price }} (val {{ item.value }})</li>
+        {% else %}
+        <li>No items fit budget</li>
+        {% endfor %}
+      </ul>
+      <div class="algo-stats">
+        <span>₹{{ brute.cost }}</span>
+        <span>Value {{ brute.value }}</span>
+        <span>{{ brute.time }} ms</span>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- VALUE COMPARISON BAR CHART -->
+  <div class="chart-section">
+    <h3>📈 Value Achieved by Each Algorithm</h3>
+    <div class="chart-box">
+      <canvas id="valueChart"></canvas>
+    </div>
+  </div>
+
+  <!-- TIME COMPARISON -->
+  <div class="chart-section">
+    <h3>⏱️ Execution Time Comparison (ms)</h3>
+    <div class="chart-box">
+      <canvas id="timeChart"></canvas>
+    </div>
+  </div>
+
+  <!-- COMPLEXITY GROWTH CHART -->
+  <div class="chart-section">
+    <h3>📉 Time Complexity Growth (n = 2 → {{ cl|length }})</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;">
+      Watch how execution time grows as we add more items — the exponential growth of Brute Force becomes clear.
+    </p>
+    <div class="chart-box">
+      <canvas id="complexityChart"></canvas>
+    </div>
+  </div>
+
+  <!-- SENSITIVITY ANALYSIS -->
+  <div class="chart-section">
+    <h3>💰 Budget Sensitivity Analysis (DP Optimal Value)</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;">
+      How the maximum achievable value changes as we increase the budget. Shows the staircase nature of the knapsack problem.
+    </p>
+    <div class="chart-box">
+      <canvas id="sensitivityChart"></canvas>
+    </div>
+  </div>
+
+  <!-- GREEDY TRACE TABLE -->
+  <div class="trace-section">
+    <h3>🔍 Greedy Algorithm — Step-by-Step Decision Trace</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.85rem;">
+      Items sorted by Value/Price ratio. Each step shows why an item was selected or skipped.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Price (₹)</th>
+            <th>Value</th>
+            <th>V/P Ratio</th>
+            <th>Decision</th>
+            <th>Budget Left (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for step in trace %}
+          <tr class="{{ 'selected-row' if step.action == 'Selected' else 'skipped-row' }}">
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ step.item }}</strong></td>
+            <td>{{ step.price }}</td>
+            <td>{{ step.value }}</td>
+            <td>{{ step.ratio }}</td>
+            <td class="{{ 'tag-selected' if step.action == 'Selected' else 'tag-skipped' }}">
+              {{ '✅ Selected' if step.action == 'Selected' else '❌ Skipped' }}
+            </td>
+            <td>{{ step.budget_remaining }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ANALYSIS NOTES -->
+  <div style="background:var(--ink);color:#fff;border-radius:var(--radius);padding:2rem;margin-top:2.5rem;">
+    <h3 style="font-family:var(--font-head);font-size:1.1rem;color:var(--saffron);margin-bottom:1rem;">
+      📝 Algorithm Analysis Summary
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;font-size:.875rem;line-height:1.7;color:rgba(255,255,255,.8)">
+      <div>
+        <strong style="color:#fff">Greedy (O(n log n))</strong><br>
+        Sorts items by value/price ratio and picks greedily. Optimal for fractional knapsack, but may miss the best solution for 0/1 knapsack when items can't be split.
+      </div>
+      <div>
+        <strong style="color:#fff">Dynamic Programming (O(n×W))</strong><br>
+        Builds a 2D table of sub-problems. Always finds the globally optimal solution. Trade-off: uses O(n×W) memory and time, impractical for very large W.
+      </div>
+      <div>
+        <strong style="color:#fff">Brute Force (O(2ⁿ))</strong><br>
+        Tries every possible subset — guaranteed optimal but exponentially slow. With 20 items that's 1,048,576 subsets. Demonstrates why algorithm design matters.
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+    <a href="/compare/{{ meal }}" class="opt-btn">🔙 Try Different Items</a>
+    <a href="/menu/{{ meal }}" class="opt-btn" style="background:var(--green);">⚡ Quick Greedy Mode</a>
+  </div>
+
+</div>
+
+<footer>Built for Design & Analysis of Algorithms · Flask + Python Knapsack Solvers</footer>
+
+<script>
+const SAFFRON = '#FF6B1A';
+const GREEN   = '#2E7D32';
+const NAVY    = '#1A1108';
+const BLUE    = '#1565C0';
+const RED     = '#C62828';
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color       = '#6B5E52';
+
+// ── Value comparison ─────────────────────────────────────────────────────────
+{% if not too_large %}
+const valueLabels = ['Greedy', 'DP (Optimal)', 'Brute Force'];
+const valueData   = [{{ greedy.value }}, {{ dp.value }}, {{ brute.value }}];
+const valueBg     = [SAFFRON, GREEN, RED];
+{% else %}
+const valueLabels = ['Greedy', 'DP (Optimal)'];
+const valueData   = [{{ greedy.value }}, {{ dp.value }}];
+const valueBg     = [SAFFRON, GREEN];
+{% endif %}
+
+new Chart(document.getElementById('valueChart'), {
+  type: 'bar',
+  data: {
+    labels: valueLabels,
+    datasets: [{
+      label: 'Total Value Achieved',
+      data: valueData,
+      backgroundColor: valueBg,
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+// ── Time comparison ──────────────────────────────────────────────────────────
+{% if not too_large %}
+const timeLabels = ['Greedy O(n log n)', 'DP O(n×W)', 'Brute O(2ⁿ)'];
+const timeData   = [{{ greedy.time }}, {{ dp.time }}, {{ brute.time }}];
+const timeBg     = [SAFFRON, GREEN, RED];
+{% else %}
+const timeLabels = ['Greedy O(n log n)', 'DP O(n×W)'];
+const timeData   = [{{ greedy.time }}, {{ dp.time }}];
+const timeBg     = [SAFFRON, GREEN];
+{% endif %}
+
+new Chart(document.getElementById('timeChart'), {
+  type: 'bar',
+  data: {
+    labels: timeLabels,
+    datasets: [{
+      label: 'Time (ms)',
+      data: timeData,
+      backgroundColor: timeBg,
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+// ── Complexity growth ────────────────────────────────────────────────────────
+new Chart(document.getElementById('complexityChart'), {
+  type: 'line',
+  data: {
+    labels: {{ j_cl }},
+    datasets: [
+      {
+        label: 'Greedy O(n log n)',
+        data:  {{ j_cg }},
+        borderColor: SAFFRON, backgroundColor: SAFFRON + '22',
+        tension: .4, pointRadius: 4, fill: true,
+      },
+      {
+        label: 'DP O(n × W)',
+        data:  {{ j_cd }},
+        borderColor: GREEN, backgroundColor: GREEN + '22',
+        tension: .4, pointRadius: 4, fill: true,
+      },
+      {
+        label: 'Brute Force O(2ⁿ)',
+        data:  {{ j_cb }},
+        borderColor: RED, backgroundColor: RED + '22',
+        tension: .4, pointRadius: 4, fill: true,
+        spanGaps: true,
+      },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { title: { display: true, text: 'Number of Items (n)' } },
+      y: { title: { display: true, text: 'Time (ms)' }, beginAtZero: true }
+    }
+  }
+});
+
+// ── Sensitivity analysis ─────────────────────────────────────────────────────
+new Chart(document.getElementById('sensitivityChart'), {
+  type: 'line',
+  data: {
+    labels: {{ j_s_budgets }},
+    datasets: [
+      {
+        label: 'Max Value (DP)',
+        data:  {{ j_s_values }},
+        borderColor: GREEN, backgroundColor: GREEN + '22',
+        tension: .3, pointRadius: 4, fill: true, stepped: true,
+      },
+      {
+        label: 'Cost Used (₹)',
+        data:  {{ j_s_costs }},
+        borderColor: SAFFRON, backgroundColor: SAFFRON + '11',
+        tension: .3, pointRadius: 4, fill: false,
+      },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { title: { display: true, text: 'Budget (₹)' } },
+      y: { title: { display: true, text: 'Value / Cost' }, beginAtZero: true }
+    }
+  }
+});
+</script>
+</body>
+</html>

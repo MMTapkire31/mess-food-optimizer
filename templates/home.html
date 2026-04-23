@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mess Food Optimizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <h2>🍽️ Mess Optimizer</h2>
+  <div class="nav-links">
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Smart Meal Planning<br><span>Within Your Budget</span></h1>
+    <p>Uses Greedy, Dynamic Programming & Brute Force algorithms to find the best food combination — and shows you exactly why each choice was made.</p>
+    <a href="#meals" class="main-btn">Start Optimizing</a>
+  </div>
+</section>
+
+<!-- MEAL SELECTION -->
+<section id="meals">
+  <h2>🍴 Select Your Meal</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>🍳 Breakfast</h3>
+      <p>Light snacks, eggs & beverages</p>
+      <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem">
+        <a href="/menu/breakfast"><button>Optimize</button></a>
+        <a href="/compare/breakfast"><button style="background:var(--saffron);color:#fff">Compare Algos</button></a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🍛 Lunch</h3>
+      <p>Full healthy Indian meals</p>
+      <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem">
+        <a href="/menu/lunch"><button>Optimize</button></a>
+        <a href="/compare/lunch"><button style="background:var(--saffron);color:#fff">Compare Algos</button></a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🍽️ Dinner</h3>
+      <p>Light curries, dal & rotis</p>
+      <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem">
+        <a href="/menu/dinner"><button>Optimize</button></a>
+        <a href="/compare/dinner"><button style="background:var(--saffron);color:#fff">Compare Algos</button></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="services">
+  <h2>Our Features</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>⚡ Greedy Algorithm</h3>
+      <p>Sorts by value/price ratio. Fast O(n log n) — not always optimal but quick.</p>
+    </div>
+    <div class="card">
+      <h3>🧠 Dynamic Programming</h3>
+      <p>0/1 Knapsack DP. Always optimal. O(n×W) time, shows full traceback.</p>
+    </div>
+    <div class="card">
+      <h3>🔍 Brute Force</h3>
+      <p>Tries all 2ⁿ subsets. Guaranteed optimal — shows why it's impractical at scale.</p>
+    </div>
+    <div class="card">
+      <h3>📊 Complexity Chart</h3>
+      <p>Live graph of execution time vs. number of items for each algorithm.</p>
+    </div>
+    <div class="card">
+      <h3>📈 Sensitivity Analysis</h3>
+      <p>See how optimal value changes as your budget increases — step by step.</p>
+    </div>
+    <div class="card">
+      <h3>🔎 Step-by-Step Trace</h3>
+      <p>Every decision the Greedy algorithm makes is shown in a detailed table.</p>
+    </div>
+  </div>
+</section>
+
+<footer>Built for Design & Analysis of Algorithms · Flask + Python Knapsack Solvers</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
